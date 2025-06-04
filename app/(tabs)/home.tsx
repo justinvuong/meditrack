@@ -2,7 +2,8 @@ import { View, Text, StyleSheet, SafeAreaView, ScrollView, Alert, TouchableOpaci
 import { Ionicons } from '@expo/vector-icons';
 
 import { supabase } from '../../supabase';
-import { useEffect, useState } from 'react'; 
+import { useCallback, useEffect, useState } from 'react'; 
+import { useFocusEffect } from '@react-navigation/native';
 
 import { fetchMedications } from '../../services/medicationService';
 import { formatTo12Hour } from '../../services/utils';
@@ -10,30 +11,34 @@ import { formatTo12Hour } from '../../services/utils';
 export default function HomeScreen() { 
     const [medications, setMedications] = useState<any[]>([]);
 
-    useEffect(() => {
-        const loadMeds = async () => {
-            const {
-                data: { user },
-                error: userError,
-            } = await supabase.auth.getUser();
+    useFocusEffect(
+        useCallback(() => {
+            const loadMeds = async () => {
+                const {
+                    data: { user },
+                    error: userError,
+                } = await supabase.auth.getUser();
 
-            if (userError || !user) {
-                Alert.alert('Error', 'User not authenticated');
-                return;
-            }
+                if (userError || !user) {
+                    Alert.alert('Error', 'User not authenticated');
+                    return;
+                }
 
-            const { data, error } = await fetchMedications(user.id);
-            
-            if (error) {
-                Alert.alert('Error', error.message);
-                return;
-            }
-            else {
-                setMedications(data || []);
-            }
-        };
-        loadMeds();
-    }, []);
+                const { data, error } = await fetchMedications(user.id);
+
+                if (error) {
+                    Alert.alert('Error', error.message);
+                    return;
+                }
+                else {
+                    setMedications(data || []);
+                }
+            };
+
+            loadMeds();
+        }, [])
+    );
+
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>

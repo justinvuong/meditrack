@@ -16,6 +16,11 @@ export default function AddScreen() {
 
 
     const handleSave = async () => {
+        if (!name.trim() || !dosage.trim()) {
+            Alert.alert('Validation error', 'Please enter medication name and dosage');
+            return;
+        }
+
         const {
             data: { user },
             error: userError,
@@ -33,8 +38,14 @@ export default function AddScreen() {
         }
         else { 
             Alert.alert('Success', 'Medication added successfully');
+            setName('');
+            setDosage('');
+            setHour('01');
+            setMinute('00');
+            setPeriod('AM')
             router.replace('/home');
         }
+
     };
 
 
@@ -54,7 +65,9 @@ export default function AddScreen() {
                 }}
             />
 
-            <Button title="Save" onPress={handleSave} />
+            <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Text style={styles.saveButtonText}>Save</Text>
+            </TouchableOpacity>
         </View>
     );
 }
@@ -85,5 +98,17 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '500',
         marginBottom: 8,
+    },
+    saveButton: {
+        backgroundColor: '#4CAF50',
+        paddingVertical: 12,
+        borderRadius: 8,
+        alignItems: 'center',
+        marginTop: 20,
+    },
+    saveButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600',
     }
 });

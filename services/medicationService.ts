@@ -27,3 +27,12 @@ export const fetchMedications = async (userId: string) => {
     
     return { data, error }; 
 };
+
+export async function deleteMedication(id: string) {
+    const { error } = await supabase
+        .from('medications')
+        .delete()
+        .eq('id', id);
+    
+    return { error };
+}

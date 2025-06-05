@@ -1,4 +1,4 @@
-import { useState } from 'react'; 
+import { useState, useEffect } from 'react'; 
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 
 type props = {
@@ -6,6 +6,7 @@ type props = {
 };
 
 export default function CustomTimePicker({ onChange }: props) { 
+
     const hours = Array.from({ length: 12 }, (_, i) => (i + 1).toString().padStart(2, '0'));
     const minutes = Array.from({ length: 60 }, (_, i) => i.toString().padStart(2, '0'));
     const periods: ('AM' | 'PM')[] = ['AM', 'PM'];

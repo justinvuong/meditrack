@@ -1,8 +1,9 @@
-import { useState } from 'react'; 
+import { useState, useCallback } from 'react'; 
 import { View, Text, TextInput, StyleSheet, Button, Alert, TouchableOpacity } from 'react-native';
 import  CustomTimePicker  from '../../components/CustomTimePicker'; // Assuming you have a custom time picker component
 import { supabase } from '../../supabase';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
+
 
 import { addMedication } from '../../services/medicationService';
 
@@ -13,6 +14,16 @@ export default function AddScreen() {
     const [minute, setMinute] = useState<string>('00');
     const [period, setPeriod] = useState<'AM' | 'PM'>('AM');
     const router = useRouter(); 
+
+    useFocusEffect(
+        useCallback(() => {
+            setName('');
+            setDosage('');
+            setHour('08');
+            setMinute('25');
+            setPeriod('AM');
+        }, [])
+    );
 
 
     const handleSave = async () => {
@@ -38,11 +49,6 @@ export default function AddScreen() {
         }
         else { 
             Alert.alert('Success', 'Medication added successfully');
-            setName('');
-            setDosage('');
-            setHour('01');
-            setMinute('00');
-            setPeriod('AM')
             router.replace('/home');
         }
 

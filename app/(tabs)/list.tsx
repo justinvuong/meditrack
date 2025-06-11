@@ -1,17 +1,11 @@
-import { useState, useCallback } from 'react';
-import { useFocusEffect } from '@react-navigation/native'
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { deleteMedication, fetchMedications } from '@/services/medicationService';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { supabase } from '../../supabase';
-import { fetchMedications, deleteMedication } from '@/services/medicationService';
 
-type Medication = { 
-    id: string;
-    name: string;
-    dosage: string;
-    schedule_time?: string
-}
+import { Medication } from '@/types/medication';
 
 export default function ListScreen() {
     const [medications, setMedications] = useState<Medication[]>([]);

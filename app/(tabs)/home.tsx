@@ -1,15 +1,16 @@
-import { View, Text, StyleSheet, SafeAreaView, ScrollView, Alert, TouchableOpacity } from 'react-native'; 
 import { Ionicons } from '@expo/vector-icons';
+import { Alert, SafeAreaView, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
-import { supabase } from '../../supabase';
-import { useCallback, useEffect, useState } from 'react'; 
 import { useFocusEffect } from '@react-navigation/native';
+import { useCallback, useState } from 'react';
+import { supabase } from '../../supabase';
 
+import { Medication } from '@/types/medication';
 import { fetchMedications } from '../../services/medicationService';
 import { formatTo12Hour } from '../../services/utils';
 
 export default function HomeScreen() { 
-    const [medications, setMedications] = useState<any[]>([]);
+    const [medications, setMedications] = useState<Medication[]>([]);
 
     useFocusEffect(
         useCallback(() => {
@@ -69,7 +70,7 @@ export default function HomeScreen() {
                                 {/*Right, time + button */}
                                 <View style={styles.medRight}>                
                                     <Text style={styles.medInfo}>
-                                        {formatTo12Hour(med.schedule_time)}
+                                        {med.schedule_time ? formatTo12Hour(med.schedule_time) : '-'}
                                     </Text>
 
                                     {/*button */}

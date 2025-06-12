@@ -57,29 +57,32 @@ export default function HomeScreen() {
                     </View>
                 ) : (
                     <ScrollView style={styles.listContainer}>
-                        {medications.map((med) => (
-                            <View key={med.id} style={styles.medCard}>
-                                {/*Left, name + dosage */}
-                                <View>                   
-                                    <Text style={styles.medName} numberOfLines={1} ellipsizeMode="tail">
-                                        {med.name}
-                                    </Text>
-                                    <Text style={styles.dosage}>{med.dosage}</Text>
-                                </View>
+                        {medications.map((med) => 
+                            med.scheduled_times.map((time, idx) => (
+                                <View key={`${med.id}-${idx}`} style={styles.medCard}>
 
-                                {/*Right, time + button */}
-                                <View style={styles.medRight}>                
-                                    <Text style={styles.medInfo}>
-                                        {med.schedule_time ? formatTo12Hour(med.schedule_time) : '-'}
-                                    </Text>
+                                    {/*Left, name + dosage  */}
+                                    <View>
+                                        <Text style={styles.medName}>
+                                            {med.name}
+                                        </Text>
+                                        <Text style={styles.dosage}>{med.dosage}</Text>
+                                    </View>
 
-                                    {/*button */}
-                                    <TouchableOpacity style={styles.medButton}onPress={() => Alert.alert('button pressed')}>
-                                        <Ionicons name="checkmark" size={20} color="#fff" style={{ marginRight: 6 }} />
+                                    {/*Right, time ++ button */}
+                                    <View style={styles.medRight}>
+                                        <Text style={styles.medInfo}>
+                                            {formatTo12Hour(time)}
+                                        </Text>
+                                    </View>
+
+                                    {/*button*/}
+                                    <TouchableOpacity style={styles.medButton} onPress={() => Alert.alert('button press')}>
+                                        <Ionicons name='checkmark' size={20} color='#fff' style={{ marginRight: 6}} />
                                     </TouchableOpacity>
+
                                 </View>
-                            </View>
-                        ))}
+                            )))}
                     </ScrollView>
                 )}
             </View>

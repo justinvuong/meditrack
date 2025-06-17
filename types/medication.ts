@@ -1,6 +1,10 @@
 export type Medication = {
-    id: string;
+    user_id: string,
+    id?: string;
     name: string;
     dosage: string;
-    schedule_time?: string;
+    scheduled_time: string;
+    start_date: string;
+    end_date: string;
+    repeat_day: string;
 };

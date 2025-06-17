@@ -32,11 +32,14 @@ export default function HomeScreen() {
                     return;
                 }
                 else {
+                    //console.log('fetched medications: ', data);
                     setMedications(data || []);
+                    
                 }
             };
 
             loadMeds();
+            
         }, [])
     );
 
@@ -59,25 +62,24 @@ export default function HomeScreen() {
                     <ScrollView style={styles.listContainer}>
                         {medications.map((med) => (
                             <View key={med.id} style={styles.medCard}>
-                                {/*Left, name + dosage */}
-                                <View>                   
-                                    <Text style={styles.medName} numberOfLines={1} ellipsizeMode="tail">
-                                        {med.name}
-                                    </Text>
+                                {/* left, name + dosage */}
+                                <View>
+                                    <Text style={styles.medName}>{med.name}</Text>
                                     <Text style={styles.dosage}>{med.dosage}</Text>
                                 </View>
 
-                                {/*Right, time + button */}
-                                <View style={styles.medRight}>                
+                                {/*right, time*/}
+                                <View style={styles.medRight}>
                                     <Text style={styles.medInfo}>
-                                        {med.schedule_time ? formatTo12Hour(med.schedule_time) : '-'}
+                                        {med.scheduled_time ? formatTo12Hour(med.scheduled_time) : 'No time'}
                                     </Text>
-
-                                    {/*button */}
-                                    <TouchableOpacity style={styles.medButton}onPress={() => Alert.alert('button pressed')}>
-                                        <Ionicons name="checkmark" size={20} color="#fff" style={{ marginRight: 6 }} />
-                                    </TouchableOpacity>
                                 </View>
+
+                                {/*Button */}
+                                <TouchableOpacity style={styles.medButton} onPress={() => Alert.alert('button press')}>
+                                    <Ionicons name='checkmark' size={20} color='#fff' style={{ marginRight: 6 }} />
+                                </TouchableOpacity>
+
                             </View>
                         ))}
                     </ScrollView>

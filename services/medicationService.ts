@@ -1,21 +1,20 @@
+import { Medication } from '@/types/medication';
 import { supabase } from '../supabase';
 
-export async function addMedication(userId: string, name: string, dosage: string, hour: string, minute: string, period: 'AM' | 'PM') {
-    const hour24 = 
-        period === 'PM' && hour !== '12' ? (parseInt(hour) + 12).toString().padStart(2, '0') :
-        period === 'AM' && hour === '12' ? '00' :
-        hour;
-        
-    const formattedtime = `${hour24}:${minute}:00`; //hh:mm:ss format for supabase
+export async function addMedication(med: Medication) {
+    const { user_id, name, dosage, scheduled_time, start_date, end_date, repeat_day } = med;
 
     const { error } = await supabase.from('medications').insert({
-        user_id: userId,
+        user_id,
         name,
         dosage,
-        schedule_time: formattedtime
+        scheduled_time,
+        start_date,
+        end_date,
+        repeat_day
     });
 
-    return { error }; 
+    return { error };
 };
 
 export const fetchMedications = async (userId: string) => {
@@ -23,7 +22,6 @@ export const fetchMedications = async (userId: string) => {
         .from('medications')
         .select('*')
         .eq('user_id', userId)
-        .order('schedule_time', { ascending: true });
     
     return { data, error }; 
 };

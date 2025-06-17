@@ -1,12 +1,15 @@
 import { useFocusEffect, useRouter } from 'expo-router';
 import { useCallback, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+
+import { Picker } from '@react-native-picker/picker';
+import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import CustomTimePicker from '../../components/CustomTimePicker'; // Assuming you have a custom time picker component
 import { supabase } from '../../supabase';
 
-
-import { formatSelectedTime, formatTo12Hour } from '@/services/utils';
-import { addMedication } from '../../services/medicationService';
+import { addMedication } from '@/services/medicationService';
+import { formatSelectedTime } from '@/services/utils';
+import { Medication } from '@/types/medication';
 
 export default function AddScreen() { 
     const [name, setName] = useState<string>('');
@@ -14,8 +17,12 @@ export default function AddScreen() {
     const [hour, setHour] = useState<string>('08');
     const [minute, setMinute] = useState<string>('00');
     const [period, setPeriod] = useState<'AM' | 'PM'>('AM');
-    const [daysOfWeek, setDaysOfWeek] = useState<string[]>([]);
-    const [scheduledTimes, setScheduledTimes] = useState<string[]>([]);
+    const [startDate, setStartDate] = useState<Date | null>(null);
+    const [isStartDatePickerVisible, setStartDatePickerVisible] = useState(false);
+    const [endDate, setEndDate] = useState<Date | null>(null);
+    const [isEndDatePickerVisible, setEndDatePickerVisible] = useState(false);
+    const [repeatDay, setRepeatDay] = useState<string>('Monday');
+    const selectedTime = formatSelectedTime(hour, minute, period);
     const router = useRouter(); 
 
     useFocusEffect(
@@ -25,12 +32,15 @@ export default function AddScreen() {
             setHour('08');
             setMinute('25');
             setPeriod('AM');
+            setStartDate(null);
+            setEndDate(null);
+            setRepeatDay('Monday');
         }, [])
     );
 
 
     const handleSave = async () => {
-        if (!name.trim() || !dosage.trim()) {
+        if (!name.trim() || !dosage.trim()) { 
             Alert.alert('Validation error', 'Please enter medication name and dosage');
             return;
         }
@@ -40,22 +50,31 @@ export default function AddScreen() {
             error: userError,
         } = await supabase.auth.getUser();
 
-        if (userError || !user) {
-            Alert.alert('Error', 'User not uthenticated');
-            return;
+        if (userError || !user) { 
+            Alert.alert('Error', 'User not authenticated');
+            return; 
         }
 
-        const { error } = await addMedication(user.id, name, dosage, hour, minute, period);
+        const med: Medication = {
+            user_id: user.id,
+            name,
+            dosage,
+            scheduled_time: selectedTime,
+            start_date: startDate?.toISOString().split('T')[0] || '',
+            end_date: endDate?.toISOString().split('T')[0] || '',
+            repeat_day: repeatDay,
+        };
+
+        const { error } = await addMedication(med); 
 
         if (error) {
             Alert.alert('Error', error.message);
         }
         else { 
-            Alert.alert('Success', 'Medication added successfully');
-            router.replace('/home');
+            Alert.alert('Success', 'Medication added successfully')
+            router.replace('/home')
         }
-
-    };
+    }; 
 
 
     return (
@@ -65,7 +84,7 @@ export default function AddScreen() {
             <TextInput style={styles.input} placeholder="Medication name" value={name} onChangeText={setName} />
             <TextInput style={styles.input} placeholder="Dosage (e.g. 500mg)" value={dosage} onChangeText={setDosage} />
             
-            <Text style={styles.label}>Select Time</Text>
+            <Text style={styles.label}>When do you take it?</Text>
             <CustomTimePicker
                 onChange={(h, m, p) => {
                     setHour(h);
@@ -74,69 +93,54 @@ export default function AddScreen() {
                 }}
             />
 
-            <TouchableOpacity
-                style={styles.addTimeButton}
-                onPress={() => {
-                    const formatted = formatSelectedTime(hour, minute, period);
-                    if (!scheduledTimes.includes(formatted)) { 
-                        setScheduledTimes((prev) => [...prev, formatted]);
-                    }
-                    else {
-                        Alert.alert('Duplicate', 'This time is already added');
-                    }
-                }}
-            >
-                <Text style={styles.addTimeButtonText}>+ Add Time</Text>
-            </TouchableOpacity>
+            <Text style={styles.label}>Select Dates</Text>
+            <View style={styles.dateRow}>
+                <TouchableOpacity style={styles.datePickerButton} onPress={() => setStartDatePickerVisible(true)}>
+                    <Text style={styles.datePickerButtonText}>
+                        {startDate ? startDate.toDateString() : 'Start date'}
+                    </Text>         
+                </TouchableOpacity>
 
-            
-            <Text style={[styles.label, { marginTop: 24 }]}>Select Days</Text>
-            <View style={styles.daySelector}>
-                {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) => (
-                    <TouchableOpacity
-                        key={day}
-                        style={[
-                            styles.dayButton,
-                            daysOfWeek.includes(day) && styles.dayButtonSelected
-                        ]}
-                        onPress={() => {
-                            setDaysOfWeek((prev) =>
-                                prev.includes(day)
-                                    ? prev.filter((d) => d !== day)
-                                    : [...prev, day]
-                            );
-                        }}
-                    >
-                        <Text style={[
-                            styles.dayButtonText,
-                            daysOfWeek.includes(day) && styles.dayButtonTextSelected
-                        ]}>
-                            {day.charAt(0)}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </View>   
+                <TouchableOpacity style={styles.datePickerButton} onPress={() => setEndDatePickerVisible(true)}>
+                    <Text style={styles.datePickerButtonText}>
+                        {endDate ? endDate.toDateString() : 'End Date'}
+                    </Text>
+                </TouchableOpacity>
+            </View>
 
-            <View style={styles.scheduledTimesList}>
-                {[...scheduledTimes]
-                    .sort((a, b) => a.localeCompare(b))
-                    .map((time, idx) => (
-                        <View key={idx} style={styles.timePill}>
-                            <Text style={styles.timePillText}>{formatTo12Hour(time)}</Text>
-                        
-                            <TouchableOpacity onPress={() => 
-                                setScheduledTimes((prev) => prev.filter((t) => t !== time))
-                            }>
-                                <Text style={styles.removeText}>X</Text>
-                            </TouchableOpacity>
-                        </View>
+            <Text style={styles.label}>Repeat On</Text>
+            <View style={styles.pickerContainer}>
+                <Picker style={styles.picker} selectedValue={repeatDay} onValueChange={(value) => setRepeatDay(value)}>
+                    {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',].map((day) => (
+                        <Picker.Item key={day} label={day} value={day} />
                     ))}
+                </Picker>
             </View>
             
-
+           
             <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
                 <Text style={styles.saveButtonText}>Save</Text>
             </TouchableOpacity>
+
+            <DateTimePickerModal
+                isVisible={isStartDatePickerVisible}
+                mode='date'
+                onConfirm={(date) => {
+                    setStartDate(date);
+                    setStartDatePickerVisible(false);
+                }}
+                onCancel={() => setStartDatePickerVisible(false)}
+            />
+
+            <DateTimePickerModal
+                isVisible={isEndDatePickerVisible}
+                mode='date'
+                onConfirm={(date) => {
+                    setEndDate(date);
+                    setEndDatePickerVisible(false);
+                }}
+                onCancel={() => setEndDatePickerVisible(false)}
+            />
 
         </ScrollView>
     );
@@ -148,6 +152,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#F0F8FF',
         padding: 20, 
         justifyContent: 'center',
+        marginTop: 24
     },
     title: {
         fontSize: 24,
@@ -181,31 +186,6 @@ const styles = StyleSheet.create({
         color: '#fff',
         fontSize: 16,
         fontWeight: '600',
-    },
-    daySelector: {
-        flexDirection: 'row',
-        justifyContent: 'space-between'
-    },
-    dayButton: {
-        width: 50,
-        height: 50,
-        borderRadius: 24,
-        borderWidth: 1, 
-        borderColor: '#ccc',
-        justifyContent: 'center',
-        alignItems: 'center'
-    },
-    dayButtonSelected: {
-        backgroundColor: '#4CAF50',
-        borderColor: '#4CAF50'
-    },
-    dayButtonText: {
-        color: '#333',
-        fontWeight: '500',
-        fontSize: 20
-    },
-    dayButtonTextSelected: {
-        color: '#fff'
     },
     addTimeButton: {
         marginTop: 10,
@@ -246,6 +226,36 @@ const styles = StyleSheet.create({
     }, 
     saveButtonContainer: {
         padding: 16,
+    },
+    datePickerButton: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderWidth: 1,
+        borderColor: '#ccc',
+        padding: 12,
+        borderRadius: 8,
+        alignItems: 'center'
+    },
+    datePickerButtonText: {
+        fontSize: 16,
+        color: '#333'
+    },
+    dateRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        gap: 12,
+        marginBottom: 20,
+    },
+    pickerContainer: {
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8, 
+        overflow: 'hidden',
+        marginBottom: 20,
+        backgroundColor: '#fff'
+    },
+    picker: {
+        width: '100%'
     }
 
 

@@ -32,11 +32,14 @@ export default function HomeScreen() {
                     return;
                 }
                 else {
+                    //console.log('fetched medications: ', data);
                     setMedications(data || []);
+                    
                 }
             };
 
             loadMeds();
+            
         }, [])
     );
 
@@ -57,32 +60,28 @@ export default function HomeScreen() {
                     </View>
                 ) : (
                     <ScrollView style={styles.listContainer}>
-                        {medications.map((med) => 
-                            med.scheduled_times.map((time, idx) => (
-                                <View key={`${med.id}-${idx}`} style={styles.medCard}>
-
-                                    {/*Left, name + dosage  */}
-                                    <View>
-                                        <Text style={styles.medName}>
-                                            {med.name}
-                                        </Text>
-                                        <Text style={styles.dosage}>{med.dosage}</Text>
-                                    </View>
-
-                                    {/*Right, time ++ button */}
-                                    <View style={styles.medRight}>
-                                        <Text style={styles.medInfo}>
-                                            {formatTo12Hour(time)}
-                                        </Text>
-                                    </View>
-
-                                    {/*button*/}
-                                    <TouchableOpacity style={styles.medButton} onPress={() => Alert.alert('button press')}>
-                                        <Ionicons name='checkmark' size={20} color='#fff' style={{ marginRight: 6}} />
-                                    </TouchableOpacity>
-
+                        {medications.map((med) => (
+                            <View key={med.id} style={styles.medCard}>
+                                {/* left, name + dosage */}
+                                <View>
+                                    <Text style={styles.medName}>{med.name}</Text>
+                                    <Text style={styles.dosage}>{med.dosage}</Text>
                                 </View>
-                            )))}
+
+                                {/*right, time*/}
+                                <View style={styles.medRight}>
+                                    <Text style={styles.medInfo}>
+                                        {med.scheduled_time ? formatTo12Hour(med.scheduled_time) : 'No time'}
+                                    </Text>
+                                </View>
+
+                                {/*Button */}
+                                <TouchableOpacity style={styles.medButton} onPress={() => Alert.alert('button press')}>
+                                    <Ionicons name='checkmark' size={20} color='#fff' style={{ marginRight: 6 }} />
+                                </TouchableOpacity>
+
+                            </View>
+                        ))}
                     </ScrollView>
                 )}
             </View>

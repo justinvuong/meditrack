@@ -7,10 +7,11 @@ import { supabase } from '../../supabase';
 
 import { Medication } from '@/types/medication';
 import { fetchMedications } from '../../services/medicationService';
-import { formatTo12Hour } from '../../services/utils';
+import { formatTo12Hour, getLocalDateString } from '../../services/utils';
 
 export default function HomeScreen() { 
     const [medications, setMedications] = useState<Medication[]>([]);
+    const [todaysMedications, setTodaysMedications] = useState<Medication[]>([]);
 
     useFocusEffect(
         useCallback(() => {
@@ -33,7 +34,21 @@ export default function HomeScreen() {
                 }
                 else {
                     //console.log('fetched medications: ', data);
+                    
+                    //console.log(data);
                     setMedications(data || []);
+
+                    const today = getLocalDateString(); 
+                    const todaysMeds = (data || []).filter((med) => { 
+                        if (!med.start_date) return false; 
+
+                        const localDate = new Date(med.start_date).toLocaleDateString('en-CA');
+
+                        //console.log(`Compareing ${localDate} to ${today}`);
+                        return localDate === today; 
+                    })
+
+                    setTodaysMedications(todaysMeds); 
                     
                 }
             };
@@ -49,18 +64,18 @@ export default function HomeScreen() {
                 <Ionicons name="menu" size={28} color="#222" />
             </View>
 
-            <Text style={styles.greeting}>Good Morning, Justin</Text>
+            <Text style={styles.greeting}>Good Morning</Text>
 
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Today's Medications</Text>
 
-                {medications.length === 0 ? (
+                {todaysMedications.length === 0 ? (
                     <View style={styles.placeholderBox}>
                         <Text style={styles.placeholderText}> No medications yet.</Text>
                     </View>
                 ) : (
                     <ScrollView style={styles.listContainer}>
-                        {medications.map((med) => (
+                        {todaysMedications.map((med) => (
                             <View key={med.id} style={styles.medCard}>
                                 {/* left, name + dosage */}
                                 <View>

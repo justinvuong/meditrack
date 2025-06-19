@@ -16,3 +16,9 @@ export function formatSelectedTime(h: string, m: string, p: 'AM' | 'PM') {
     const minute = m.padStart(2, '0');
     return `${hour}:${minute}`;
 }
+
+//get local date
+export const getLocalDateString = (): string => { 
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
+}

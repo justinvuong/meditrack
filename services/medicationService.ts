@@ -1,8 +1,8 @@
-import { Medication } from '@/types/medication';
+import { CreateMedicationDTO } from '@/types/medication';
 import { supabase } from '../supabase';
 
-export async function addMedication(med: Medication) {
-    const { user_id, name, dosage, scheduled_time, start_date, end_date, repeat_day } = med;
+export async function addMedication(med: CreateMedicationDTO) {
+    const { user_id, name, dosage, scheduled_time, start_date, end_date, repeat_day, taken } = med;
 
     const { error } = await supabase.from('medications').insert({
         user_id,
@@ -11,7 +11,8 @@ export async function addMedication(med: Medication) {
         scheduled_time,
         start_date,
         end_date,
-        repeat_day
+        repeat_day,
+        taken,
     });
 
     return { error };
@@ -34,3 +35,12 @@ export async function deleteMedication(id: string) {
     
     return { error };
 }
+
+export const toggleMedicationTaken = async (id: string, currentValue: boolean) => {
+    const { error } = await supabase
+        .from('medications')
+        .update({ taken: !currentValue })
+        .eq('id', id);
+    
+    return { error };
+};

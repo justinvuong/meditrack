@@ -9,7 +9,7 @@ import { supabase } from '../../supabase';
 
 import { addMedication } from '@/services/medicationService';
 import { formatSelectedTime } from '@/services/utils';
-import { Medication } from '@/types/medication';
+import { CreateMedicationDTO } from '@/types/medication';
 
 export default function AddScreen() { 
     const [name, setName] = useState<string>('');
@@ -29,8 +29,8 @@ export default function AddScreen() {
         useCallback(() => {
             setName('');
             setDosage('');
-            setHour('08');
-            setMinute('25');
+            setHour('01');
+            setMinute('00');
             setPeriod('AM');
             setStartDate(null);
             setEndDate(null);
@@ -55,14 +55,15 @@ export default function AddScreen() {
             return; 
         }
 
-        const med: Medication = {
-            user_id: user.id,
+        const med: CreateMedicationDTO = {
+            user_id: user.id, 
             name,
             dosage,
             scheduled_time: selectedTime,
             start_date: startDate?.toISOString().split('T')[0] || '',
             end_date: endDate?.toISOString().split('T')[0] || '',
             repeat_day: repeatDay,
+            taken: false
         };
 
         const { error } = await addMedication(med); 
